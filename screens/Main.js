@@ -1,13 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react'
-import {View, Text, ActivityIndicator, StyleSheet, FlatList, Picker, TextInput, Switch, useWindowDimensions, LayoutAnimation} from 'react-native'
+import {View, Text, ActivityIndicator, StyleSheet, FlatList, Picker, TextInput, Switch, useWindowDimensions} from 'react-native'
 import CountryStat from '../components/CountryStat'
 import _ from 'lodash'
-
-if (Platform.OS === 'android') {
-    if (UIManager.setLayoutAnimationEnabledExperimental) {
-        UIManager.setLayoutAnimationEnabledExperimental(true)
-    }
-}
 
 const styles = StyleSheet.create({
     root: {
@@ -67,11 +61,7 @@ function Main({navigation}) {
     const [isAsc, setAsc] = useState(true)
     const [filter, setFilter] = useState("")
     const {width: windowWidth} = useWindowDimensions()
-    const renderCountry = ({item}) => <CountryStat name = {item[0]} deaths = {item[1][item[1].length-1].deaths} recovered = {item[1][item[1].length-1].recovered} />
-    console.log("This is current filter", filter, "and this is previous filter", prevFilter.current)
-    useEffect(() => {
-        prevFilter.current = filter
-    }, [filter])
+    
     useEffect(() => {
         fetch("https://pomber.github.io/covid19/timeseries.json")
         .then(response => response.json())
@@ -82,7 +72,9 @@ function Main({navigation}) {
             setLoading(false)
         })
     }, [])
+
     useEffect(() => {
+        prevFilter.current = filter
         let newshow = response.filter(r => r[0].toLowerCase().includes(filter.toLowerCase()))
         if (pickValue === "deaths") {
             newshow = _.sortBy(newshow, function(o) {
@@ -100,9 +92,15 @@ function Main({navigation}) {
                 newshow = _.reverse(newshow)
             }
         }
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.spring)
         setShow(newshow)
     }, [filter, isAsc, pickValue])
+
+    const renderCountry = ({item}) => <CountryStat name = {item[0]} stats = {item[1]} />
+    
+    const optimizeLayout = (data, index) => (
+        {length: 70, offset: 70*index, index}
+    )
+
     return (
         <View style = {styles.root}>
             <View style = {{display: loading? "flex": "none", justifyContent: "center", alignItems: "center"}}>
@@ -144,8 +142,8 @@ function Main({navigation}) {
                     renderItem = {renderCountry}
                     data = {show}
                     extraData = {filter}
-                    removeClippedSubviews = {true}
-                    maxToRenderPerBatch = {8}
+                    initialNumToRender = {20}
+                    getItemLayout = {optimizeLayout}
                 />
             </View>
         </View>

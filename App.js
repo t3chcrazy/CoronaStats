@@ -1,15 +1,11 @@
 import React from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  StatusBar,
-} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import Main from './screens/Main'
+import AboutCountry from './screens/AboutCountry'
+import {enableScreens} from 'react-native-screens'
+
+enableScreens()
 
 const Stack = createStackNavigator()
 
@@ -20,6 +16,7 @@ const App = () => {
         header: (props) => null
       }}>
         <Stack.Screen name = "Main" component = {Main} />
+        <Stack.Screen name = "About" component = {AboutCountry} />
       </Stack.Navigator>
     </NavigationContainer>
   );
